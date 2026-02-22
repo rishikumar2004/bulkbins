@@ -1,0 +1,43 @@
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+venv/
+.venv/
+env/
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# DB
+#*.db
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# PDF/Reports
+*.pdf
+backend/uploads/
+
+# Secrets
+backend/client_secret.json
+backend/token.json
+.env
+.env.production
+backend/.env
+backend/.env.production
+client_secret.json
+token.json
+token.pickle

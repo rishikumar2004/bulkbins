@@ -1,0 +1,24 @@
+
+--- Columns in inventory_item ---
+  id (INTEGER) PRIMARY KEY
+  business_id (INTEGER) NOT NULL
+  name (VARCHAR(100)) NOT NULL
+  stock_quantity (INTEGER) DEFAULT 0
+  reorder_level (INTEGER) DEFAULT 5
+  cost_price (FLOAT) 
+  selling_price (FLOAT) 
+  category (VARCHAR(50)) 
+  lead_time (INTEGER) DEFAULT 1
+
+--- Columns in transaction ---
+  id (INTEGER) PRIMARY KEY
+  business_id (INTEGER) NOT NULL
+  inventory_item_id (INTEGER) 
+  amount (FLOAT) NOT NULL
+  quantity (INTEGER) DEFAULT 1
+  category (VARCHAR(50)) 
+  type (VARCHAR(20)) 
+  timestamp (DATETIME) 
+  description (VARCHAR(200)) 
+  receipt_url (VARCHAR(500)) 
+  ai_metadata (TEXT) 
