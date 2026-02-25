@@ -9,6 +9,7 @@ export default {
       fontFamily: {
         sans: ['Outfit', 'sans-serif'],
         serif: ['"DM Serif Display"', 'serif'],
+        condensed: ['Dosis', 'sans-serif'],
       },
       colors: {
         primary: {

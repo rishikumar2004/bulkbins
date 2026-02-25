@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Download, Mail, FileText, Table, FileSpreadsheet, Calendar, Clock, Check, Loader2, ChevronDown } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { X, Calendar, Download, FileText, Table, FileSpreadsheet, ChevronDown, CheckCircle2 } from 'lucide-react';
 import CustomSelect from './CustomSelect';
+import ThemedDatePicker from './ThemedDatePicker';
+import toast from 'react-hot-toast';
 
 const API_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000") + "/api";
 
@@ -219,23 +220,21 @@ const ExportModal = ({ isOpen, onClose, businessId, businessName }) => {
 
                         {/* Custom Date Range */}
                         {timeframe === 'custom' && (
-                            <div className="mt-3 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2">
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                 <div>
-                                    <label className="text-xs text-slate-500 mb-1 block">Start Date</label>
-                                    <input
-                                        type="date"
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2 block ml-3">Start Date</label>
+                                    <ThemedDatePicker
                                         value={customStart}
                                         onChange={e => setCustomStart(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                                        className="w-full"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-slate-500 mb-1 block">End Date</label>
-                                    <input
-                                        type="date"
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2 block ml-3">End Date</label>
+                                    <ThemedDatePicker
                                         value={customEnd}
                                         onChange={e => setCustomEnd(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                                        className="w-full"
                                     />
                                 </div>
                             </div>

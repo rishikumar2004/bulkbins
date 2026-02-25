@@ -40,15 +40,15 @@ const BusinessSelection = () => {
     };
 
     return (
-        <div className="relative w-full min-h-screen flex flex-col items-center bg-slate-950 font-sans selection:bg-primary-500/30 overflow-x-hidden">
+        <div className="relative w-full min-h-screen flex flex-col items-center bg-slate-950 font-sans selection:bg-primary-500/30 overflow-x-hidden pb-20">
             {/* Fixed Immersive Background */}
             <div className="fixed inset-0 z-0">
-                <img src={FarmBg} alt="Background" className="w-full h-full object-cover scale-105 opacity-40 blur-[1px]" />
-                <div className="absolute inset-0 bg-slate-950/80"></div>
+                <img src={FarmBg} alt="Background" className="w-full h-full object-cover scale-105 opacity-50 blur-[4px]" />
+                <div className="absolute inset-0 bg-slate-950/92"></div>
             </div>
 
             {/* Header */}
-            <header className="relative z-10 w-full flex justify-center py-8">
+            <header className="relative z-10 w-full flex justify-center py-4">
                 <div className="w-full max-w-[1200px] flex justify-between items-center px-6">
                     <div className="flex items-center space-x-4">
                         <img src={Logo} alt="Logo" className="w-12 h-12 object-contain rounded-md drop-shadow-[0_10px_30px_rgba(74,222,128,0.2)] animate-float" />
@@ -69,18 +69,18 @@ const BusinessSelection = () => {
                 </div>
             </header>
 
-            <main className="relative z-10 w-full flex flex-col items-center py-12 md:py-20 flex-grow">
+            <main className="relative z-10 w-full flex flex-col items-center py-4 md:py-8 flex-grow justify-center">
                 <div className="max-w-[1200px] w-full px-6 flex flex-col items-center">
-                    <div className="text-center mb-16 animate-fade-in">
-                        <h1 className="text-4xl md:text-6xl font-serif text-white mb-6 tracking-tighter">Authorized Entities</h1>
-                        <p className="text-slate-200 text-lg font-bold max-w-2xl mx-auto leading-relaxed">Select a registered business entity to access the management terminal or initialize a new store.</p>
+                    <div className="text-center mb-8 animate-fade-in">
+                        <h1 className="text-4xl md:text-6xl font-serif text-white mb-6 tracking-tighter">Select Your Store</h1>
+                        <p className="text-slate-300 text-lg font-medium max-w-2xl mx-auto leading-relaxed">Choose a store to continue or create a new one.</p>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-8 w-full">
+                    <div className="flex flex-wrap justify-center items-start gap-8 w-full">
                         {businesses.map((biz) => (
-                            <div key={biz.id} className={`glass p-8 rounded-[3rem] transition-all group relative animate-fade-in w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.35rem)] max-w-sm ${biz.status === 'pending' ? 'border-amber-500/20 opacity-80' :
-                                biz.status === 'rejected' ? 'border-red-500/20 opacity-60' :
-                                    'border-white/5 hover:border-primary-500/30'
+                            <div key={biz.id} className={`p-8 rounded-[3rem] transition-all group relative animate-fade-in w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.35rem)] max-w-sm border shadow-2xl ${biz.status === 'pending' ? 'bg-white/[0.03] border-amber-500/20 opacity-80' :
+                                biz.status === 'rejected' ? 'bg-white/[0.02] border-red-500/20 opacity-60' :
+                                    'bg-white/[0.08] border-white/20 hover:border-primary-500/50 hover:bg-white/[0.12] hover:shadow-primary-500/10'
                                 }`}>
                                 <div className="absolute top-8 right-8 flex flex-col items-end space-y-3">
                                     <span className={`px-5 py-2 rounded-full text-xs font-black uppercase tracking-[0.15em] border shadow-lg ${biz.role === 'Owner' ? 'bg-primary-500/20 text-primary-300 border-primary-500/40' :
@@ -116,7 +116,7 @@ const BusinessSelection = () => {
                                     {(!biz.status || biz.status === 'approved') ? (
                                         <button
                                             onClick={() => handleOpen(biz)}
-                                            className="flex-grow bg-primary-500 text-white py-4.5 rounded-2xl tracking-[0.15em] uppercase text-lg flex items-center justify-center space-x-2 hover:bg-primary-600 transition-all font-black shadow-xl shadow-primary-500/20 hover:scale-[1.02] active:scale-95"
+                                            className="flex-grow bg-primary-500 text-white py-3.5 rounded-full tracking-[0.15em] uppercase text-base flex items-center justify-center space-x-2 hover:bg-primary-600 transition-all font-black shadow-xl shadow-primary-500/20 hover:scale-[1.02] active:scale-95 px-8"
                                         >
                                             <span>Access</span>
                                             <ExternalLink className="w-5 h-5" />
@@ -155,7 +155,7 @@ const BusinessSelection = () => {
                                             placeholder="Business Name"
                                             value={newBusiness.name}
                                             onChange={(e) => setNewBusiness({ ...newBusiness, name: e.target.value })}
-                                            className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500/50 transition-all mb-4 font-medium"
+                                            className="w-full bg-slate-950 border border-white/10 rounded-full py-4 px-8 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500/50 transition-all mb-4 font-medium"
                                             required
                                         />
                                         <input
@@ -163,21 +163,21 @@ const BusinessSelection = () => {
                                             placeholder="Primary Email"
                                             value={newBusiness.email}
                                             onChange={(e) => setNewBusiness({ ...newBusiness, email: e.target.value })}
-                                            className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500/50 transition-all mb-4 font-medium"
+                                            className="w-full bg-slate-950 border border-white/10 rounded-full py-4 px-8 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500/50 transition-all mb-4 font-medium"
                                         />
                                         <input
                                             type="email"
                                             placeholder="Secondary Email (Optional)"
                                             value={newBusiness.secondaryEmail}
                                             onChange={(e) => setNewBusiness({ ...newBusiness, secondaryEmail: e.target.value })}
-                                            className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500/50 transition-all mb-4 font-medium"
+                                            className="w-full bg-slate-950 border border-white/10 rounded-full py-4 px-8 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500/50 transition-all mb-4 font-medium"
                                         />
                                     </div>
                                     <div className="flex gap-4">
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="flex-grow bg-primary-500 text-white py-4 rounded-2xl text-lg uppercase tracking-widest disabled:opacity-50 font-medium"
+                                            className="flex-grow bg-primary-500 text-white py-4 rounded-full text-lg uppercase tracking-widest disabled:opacity-50 font-black shadow-xl shadow-primary-500/20 active:scale-95 transition-all"
                                         >
                                             {loading ? 'Submitting...' : 'Register'}
                                         </button>
@@ -187,7 +187,7 @@ const BusinessSelection = () => {
                                                 setIsCreating(false);
                                                 setNewBusiness({ name: '', email: '', secondaryEmail: '' });
                                             }}
-                                            className="bg-white/5 text-slate-400 px-6 rounded-2xl text-lg uppercase tracking-widest hover:bg-white/10 transition-colors font-medium"
+                                            className="bg-white/5 text-slate-400 px-8 rounded-full text-lg uppercase tracking-widest hover:bg-white/10 transition-all font-black"
                                         >
                                             Cancel
                                         </button>
@@ -197,12 +197,12 @@ const BusinessSelection = () => {
                         ) : (
                             <button
                                 onClick={() => setIsCreating(true)}
-                                className="glass p-8 rounded-[3rem] border-dashed border-white/20 hover:border-primary-500/50 transition-all group flex flex-col items-center justify-center text-slate-300 hover:text-primary-400 min-h-[320px] w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.35rem)] max-w-sm shadow-2xl hover:scale-[1.02]"
+                                className="p-8 rounded-[3rem] border-dashed border-white/10 hover:border-primary-500/40 transition-all group flex flex-col items-center justify-center text-slate-400 hover:text-primary-400 min-h-[320px] w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.35rem)] max-w-sm bg-white/[0.02] hover:bg-white/[0.05] hover:scale-[1.01]"
                             >
-                                <div className="p-7 rounded-[1.5rem] bg-white/5 mb-6 group-hover:bg-primary-500/10 transition-all border border-dashed border-white/20 shadow-inner">
+                                <div className="p-7 rounded-[1.5rem] bg-white/[0.03] mb-6 group-hover:bg-primary-500/10 transition-all border border-dashed border-white/10">
                                     <Plus className="w-10 h-10" />
                                 </div>
-                                <span className="uppercase tracking-[0.2em] text-sm font-black">Register New Entity</span>
+                                <span className="uppercase tracking-[0.2em] text-xs font-bold opacity-70 group-hover:opacity-100">Register New Entity</span>
                             </button>
                         )}
                     </div>

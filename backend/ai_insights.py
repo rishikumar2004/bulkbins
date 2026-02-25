@@ -46,10 +46,11 @@ def get_dashboard_stats(business_id):
 
     granularity = request.args.get("granularity", "monthly") # daily, weekly, monthly, quarterly, halfyearly, yearly, custom
 
-    # Date Filtering
-    end_date = datetime.utcnow()
+    # Date Filtering — use local time to match seeded timestamps
+    end_date = datetime.now().replace(hour=23, minute=59, second=59)
     if granularity == 'daily':
-        start_date = end_date - timedelta(days=1)
+        # Last 24 hours: start = beginning of today in local time
+        start_date = datetime.now().replace(hour=0, minute=0, second=0)
     elif granularity == 'weekly':
         start_date = end_date - timedelta(weeks=1)
     elif granularity == 'quarterly':
@@ -271,28 +272,32 @@ def get_dashboard_stats(business_id):
         points = min(8, max(3, total_days // 7 + 1))
         delta_unit = timedelta(days=max(1, total_days // points))
         label_fmt = "%d %b"
-    else: # weekly
+    elif granularity == "weekly":
         points = 4
         delta_unit = timedelta(weeks=1)
         label_fmt = "Week %w"
+    else: # Provide fallback to monthly
+        points = 6
+        delta_unit = timedelta(days=30)
+        label_fmt = "%b"
 
     for i in range(points):
-        end_date = today - (delta_unit * (points - 1 - i))
-        start_date = end_date - delta_unit
+        period_end = today - (delta_unit * (points - 1 - i))
+        period_start = period_end - delta_unit
         
         p_sales = db.session.query(func.sum(Transaction.amount)).filter(
             Transaction.business_id == business_id, Transaction.type == "Sale",
-            Transaction.timestamp > start_date, Transaction.timestamp <= end_date
+            Transaction.timestamp > period_start, Transaction.timestamp <= period_end
         ).scalar() or 0
         
         p_expenses = db.session.query(func.sum(Transaction.amount)).filter(
             Transaction.business_id == business_id, Transaction.type == "Expense",
-            Transaction.timestamp > start_date, Transaction.timestamp <= end_date
+            Transaction.timestamp > period_start, Transaction.timestamp <= period_end
         ).scalar() or 0
         
         expense_series.append(float(p_expenses))
 
-        label = end_date.strftime(label_fmt)
+        label = period_end.strftime(label_fmt)
         if granularity == "weekly":
              label = f"Week {i+1}"
         elif granularity == "quarterly":

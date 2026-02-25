@@ -3,12 +3,23 @@ import {
     BarChart3,
     Calendar,
     TrendingUp,
-    CheckCircle2,
-    Plus,
-    Minus,
     Calculator,
-    LayoutDashboard
+    TrendingDown,
+    DollarSign,
+    Package,
+    AlertCircle,
+    ArrowRight,
+    ArrowUpRight,
+    ArrowDownRight,
+    Layers,
+    CreditCard,
+    ChevronDown,
+    Wand2,
+    Search
 } from 'lucide-react';
+import CustomSelect from './CustomSelect';
+import SegmentedControl from './SegmentedControl';
+import ThemedDatePicker from './ThemedDatePicker';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -217,37 +228,45 @@ const SimpleSummaryDashboard = ({ transactions = [] }) => {
                     </div>
 
                     {/* Period Switcher */}
-                    <div className="flex flex-wrap bg-slate-100 p-1 rounded-xl gap-1">
-                        {['Daily', 'Weekly', 'Monthly', 'Quarterly', 'HalfYearly', 'Yearly', 'Custom'].map((p) => (
-                            <button
-                                key={p}
-                                onClick={() => setPeriod(p)}
-                                className={`px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all whitespace-nowrap ${period === p ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                                    }`}
-                            >
-                                {p === 'HalfYearly' ? 'Half-Year' : p === 'Custom' ? '📅 Custom' : p}
-                            </button>
-                        ))}
-                    </div>
+                    <SegmentedControl
+                        name="summary-period"
+                        value={period}
+                        onChange={setPeriod}
+                        options={[
+                            { value: 'Daily', label: 'Daily' },
+                            { value: 'Weekly', label: 'Weekly' },
+                            { value: 'Monthly', label: 'Monthly' },
+                            { value: 'Quarterly', label: 'Quarterly' },
+                            { value: 'HalfYearly', label: 'Half-Year' },
+                            { value: 'Yearly', label: 'Yearly' },
+                            { value: 'Custom', label: 'Custom' },
+                        ]}
+                        activeColor="bg-indigo-900"
+                    />
                 </div>
 
                 {/* Custom Date Range Pickers */}
                 {period === 'Custom' && (
-                    <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <span className="text-xs font-bold uppercase tracking-widest text-slate-500 flex-shrink-0">From</span>
-                        <input
-                            type="date"
-                            value={customStart}
-                            onChange={(e) => setCustomStart(e.target.value)}
-                            className="px-3 py-2 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                        />
-                        <span className="text-xs font-bold uppercase tracking-widest text-slate-500 flex-shrink-0">To</span>
-                        <input
-                            type="date"
-                            value={customEnd}
-                            onChange={(e) => setCustomEnd(e.target.value)}
-                            className="px-3 py-2 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                        />
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white/60 dark:bg-white/5 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-2">From</span>
+                            <ThemedDatePicker
+                                value={customStart}
+                                onChange={(e) => setCustomStart(e.target.value)}
+                                className="w-[180px]"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">To</span>
+                            <ThemedDatePicker
+                                value={customEnd}
+                                onChange={(e) => setCustomEnd(e.target.value)}
+                                className="w-[180px]"
+                            />
+                        </div>
+                        {(!customStart || !customEnd) && (
+                            <span className="text-[10px] text-amber-500 font-bold ml-1 animate-pulse">Select both dates</span>
+                        )}
                     </div>
                 )}
 

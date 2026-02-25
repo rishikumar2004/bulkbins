@@ -78,7 +78,7 @@ const CustomSelect = ({ value, onChange, options, placeholder = 'Select...', cla
     const dropdown = isOpen && !disabled ? createPortal(
         <div
             ref={dropdownRef}
-            className="fixed z-[9999] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/40 overflow-hidden"
+            className="fixed z-[9999] bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/40 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             style={dropdownStyle}
         >
             <div className="max-h-[240px] overflow-y-auto no-scrollbar py-1.5">
@@ -96,12 +96,12 @@ const CustomSelect = ({ value, onChange, options, placeholder = 'Select...', cla
                                 setIsOpen(false);
                             }}
                             className={`w-full text-left px-5 py-3 text-sm font-semibold transition-all flex items-center justify-between gap-3 ${isSelected
-                                ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400'
-                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'
+                                ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 font-bold'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-500/5 dark:hover:bg-white/5'
                                 }`}
                         >
                             <span className="truncate">{optLabel}</span>
-                            {isSelected && <Check className="w-4 h-4 text-violet-500 shrink-0" />}
+                            {isSelected && <Check className="w-4 h-4 text-primary-500 shrink-0" />}
                         </button>
                     );
                 })}
@@ -117,11 +117,11 @@ const CustomSelect = ({ value, onChange, options, placeholder = 'Select...', cla
                 type="button"
                 disabled={disabled}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
-                className={`w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-6 text-left text-sm font-bold transition-all flex items-center justify-between gap-3 ${disabled
+                className={`w-full bg-white dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-2xl py-4 px-6 text-left text-sm font-bold transition-all flex items-center justify-between gap-3 group/btn ${disabled
                     ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-slate-900'
-                    : 'hover:border-violet-400 dark:hover:border-violet-500/50'
+                    : 'hover:border-primary-500/50 hover:bg-slate-50 dark:hover:bg-primary-500/5'
                     } ${isOpen
-                        ? 'border-violet-500 dark:border-violet-500 ring-[3px] ring-violet-500/15'
+                        ? 'border-primary-500 dark:border-primary-500 ring-4 ring-primary-500/10'
                         : ''
                     } ${isPlaceholder
                         ? 'text-slate-400 dark:text-slate-500'
@@ -129,7 +129,7 @@ const CustomSelect = ({ value, onChange, options, placeholder = 'Select...', cla
                     } ${buttonClassName}`}
             >
                 <span className="truncate">{displayLabel}</span>
-                <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-slate-400 group-hover/btn:text-primary-500 shrink-0 transition-all duration-300 ${isOpen ? 'rotate-180 text-primary-500' : ''}`} />
             </button>
             {dropdown}
         </div>
