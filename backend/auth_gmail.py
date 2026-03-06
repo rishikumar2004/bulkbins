@@ -1,12 +1,14 @@
-from gmail_util import get_gmail_service
+"""
+auth_gmail.py — DEPRECATED
 
-def authenticate():
-    print("Initiating Gmail API authentication...")
-    try:
-        service = get_gmail_service()
-        print("✅ Authentication successful! token.json has been created.")
-    except Exception as e:
-        print(f"❌ Error during authentication: {e}")
+This file is no longer used. The token.json approach has been replaced
+with a permanent refresh_token stored in environment variables.
 
-if __name__ == "__main__":
-    authenticate()
+To set up Gmail credentials for the first time, run:
+  python setup_gmail_token.py
+
+That script will give you the 4 env vars to add to your .env file
+and to your Railway / Render environment settings.
+"""
+
+print("This file is deprecated. Please run: python setup_gmail_token.py")

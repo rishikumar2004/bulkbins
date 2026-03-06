@@ -1,112 +1,158 @@
-import os.path
+"""
+gmail_util.py — Auto-Refreshing Gmail API Email Sender
+
+HOW IT WORKS (works on ALL platforms: Railway, Render, AWS, etc.):
+- Stores the OAuth2 refresh_token in an env variable (never expires)
+- On every email send, auto-fetches a fresh access_token via HTTPS (port 443)
+- Zero dependency on token.json files, zero manual re-authorization needed
+
+REQUIRED ENV VARS:
+  GMAIL_CLIENT_ID       — from Google Cloud Console OAuth2 Credentials
+  GMAIL_CLIENT_SECRET   — from Google Cloud Console OAuth2 Credentials
+  GMAIL_REFRESH_TOKEN   — one-time setup (run setup_gmail_token.py)
+  GMAIL_SENDER_EMAIL    — the Gmail address to send FROM (e.g. monica3214b@gmail.com)
+"""
+
+import os
 import base64
+import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+from dotenv import load_dotenv
 
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+# Load .env file
+load_dotenv()
 
-def get_gmail_service():
+GMAIL_CLIENT_ID     = os.environ.get('GMAIL_CLIENT_ID')
+GMAIL_CLIENT_SECRET = os.environ.get('GMAIL_CLIENT_SECRET')
+GMAIL_REFRESH_TOKEN = os.environ.get('GMAIL_REFRESH_TOKEN')
+GMAIL_SENDER_EMAIL  = os.environ.get('GMAIL_SENDER_EMAIL', 'monica3214b@gmail.com')
+
+GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
+GMAIL_SEND_URL   = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send'
+
+
+def _get_access_token() -> str:
     """
-    Handles OAuth2 authentication and returns a Gmail API service instance.
-    Supports loading from files (local) or environment variables (live/Render).
+    Auto-fetches a fresh Gmail access token using the stored refresh token.
+    This is a simple HTTPS POST to Google — works on EVERY hosting platform.
+    The refresh token never expires (unless revoked), so this is permanent.
     """
-    import json
-    creds = None
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    token_path = os.path.join(basedir, 'token.json')
-    secret_path = os.path.join(basedir, 'client_secret.json')
+    if not all([GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN]):
+        missing = []
+        if not GMAIL_CLIENT_ID: missing.append('GMAIL_CLIENT_ID')
+        if not GMAIL_CLIENT_SECRET: missing.append('GMAIL_CLIENT_SECRET')
+        if not GMAIL_REFRESH_TOKEN: missing.append('GMAIL_REFRESH_TOKEN')
+        raise EnvironmentError(
+            f"Missing required Gmail env vars: {', '.join(missing)}. "
+            f"Run setup_gmail_token.py to generate your GMAIL_REFRESH_TOKEN."
+        )
 
-    # 1. Try loading Token from Env Var (Primary for Render)
-    env_token = os.environ.get('GOOGLE_TOKEN_JSON')
-    if env_token:
-        try:
-            creds = Credentials.from_authorized_user_info(json.loads(env_token), SCOPES)
-            print("INFO: Loaded Gmail token from environment variable.")
-        except Exception as e:
-            print(f"WARNING: Failed to load token from environment: {e}")
+    response = requests.post(GOOGLE_TOKEN_URL, data={
+        'client_id':     GMAIL_CLIENT_ID,
+        'client_secret': GMAIL_CLIENT_SECRET,
+        'refresh_token': GMAIL_REFRESH_TOKEN,
+        'grant_type':    'refresh_token',
+    }, timeout=10)
 
-    # 2. Fallback to token.json file
-    if not creds and os.path.exists(token_path):
-        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+    if not response.ok:
+        error_body = response.json() if response.content else {}
+        error_desc = error_body.get('error_description', response.text)
+        raise ConnectionError(
+            f"Failed to refresh Gmail access token: [{response.status_code}] {error_desc}. "
+            f"If error is 'invalid_grant', your GMAIL_REFRESH_TOKEN may have been revoked — "
+            f"re-run setup_gmail_token.py."
+        )
+
+    access_token = response.json().get('access_token')
+    if not access_token:
+        raise ValueError("Google returned a 200 but no access_token in the response.")
+
+    print("INFO: Successfully auto-refreshed Gmail access token.")
+    return access_token
+
+
+def send_gmail(recipient: str, subject: str, body_html: str, attachments=None):
+    """
+    Sends an email via the Gmail REST API using an auto-refreshed OAuth2 access token.
+    Maintains the same function signature as the previous gmail_util.py so that
+    export_routes.py requires zero changes.
+
+    Args:
+        recipient:   Destination email address.
+        subject:     Email subject line.
+        body_html:   HTML body of the email.
+        attachments: Optional list of dicts: [{"filename": str, "content": bytes}]
     
-    # Check if credentials exist and are valid
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            print("INFO: Refreshing Gmail access token...")
-            creds.refresh(Request())
-        else:
-            # 3. Handle Client Secret (Env or File)
-            env_secret = os.environ.get('GOOGLE_CLIENT_SECRET_JSON')
-            
-            if env_secret:
-                try:
-                    secret_info = json.loads(env_secret)
-                    flow = InstalledAppFlow.from_client_config(secret_info, SCOPES)
-                    print("INFO: Loaded Gmail client secret from environment variable.")
-                except Exception as e:
-                    raise ValueError(f"Invalid GOOGLE_CLIENT_SECRET_JSON environment variable: {e}")
-            elif os.path.exists(secret_path):
-                flow = InstalledAppFlow.from_client_secrets_file(secret_path, SCOPES)
-            else:
-                raise FileNotFoundError("Missing Google API credentials (both Env Var and File).")
-                
-            # If we reach here, we need a fresh authorization
-            # This only works locally where a browser can open
-            creds = flow.run_local_server(port=0)
-        
-        # Save the credentials for next time (locally)
-        # Note: In Render, this file will be ephemeral, but we should have the Env Var anyway
-        with open(token_path, 'w') as token:
-            token.write(creds.to_json())
-
-    return build('gmail', 'v1', credentials=creds)
-
-def send_gmail(recipient, subject, body_html, attachments=None):
-    """
-    Sends an email using the Gmail API.
-    attachments: list of dicts {"filename": str, "content": bytes}
+    Returns:
+        dict: The Gmail API response JSON (contains 'id', 'threadId', etc.)
+    
+    Raises:
+        EnvironmentError: If required env vars are missing.
+        ConnectionError: If token refresh fails (e.g., revoked refresh token).
+        requests.HTTPError: If the Gmail API send call fails.
     """
     try:
-        service = get_gmail_service()
-        message = MIMEMultipart()
-        message['to'] = recipient
-        message['subject'] = subject
-        message["from"] = "BulkBins Reports <monica3214b@gmail.com>" # To update email sender name
-        
-        # Add HTML body
-        msg_html = MIMEText(body_html, 'html')
-        message.attach(msg_html)
+        # Step 1: Get a fresh access token (auto-refreshed every time)
+        access_token = _get_access_token()
 
-        # Add attachments if any
+        # Step 2: Build the MIME email message
+        message = MIMEMultipart()
+        message['to']      = recipient
+        message['subject'] = subject
+        message['from']    = f'BulkBins Reports <{GMAIL_SENDER_EMAIL}>'
+
+        # Attach HTML body
+        message.attach(MIMEText(body_html, 'html'))
+
+        # Attach files if any
         if attachments:
-            for attr in attachments:
+            for attachment in attachments:
                 part = MIMEBase('application', 'octet-stream')
-                part.set_payload(attr['content'])
+                part.set_payload(attachment['content'])
                 encoders.encode_base64(part)
                 part.add_header(
                     'Content-Disposition',
-                    f'attachment; filename="{attr["filename"]}"'
+                    f'attachment; filename="{attachment["filename"]}"'
                 )
                 message.attach(part)
 
-        # Gmail API requires the raw MIME message to be base64url encoded
-        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-        
-        sent_message = service.users().messages().send(
-            userId="me",
-            body={'raw': raw_message}
-        ).execute()
-        
-        print(f"✅ Email sent successfully via Gmail API. Message ID: {sent_message['id']}")
-        return sent_message
-    except Exception as error:
-        print(f"❌ Error sending email via Gmail API: {error}")
-        raise error
+        # Step 3: Encode the message to base64url (required by Gmail API)
+        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+
+        # Step 4: Send via Gmail REST API (plain HTTPS, port 443 — works everywhere)
+        response = requests.post(
+            GMAIL_SEND_URL,
+            headers={
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type':  'application/json',
+            },
+            json={'raw': raw_message},
+            timeout=30
+        )
+
+        response.raise_for_status()  # Raises for 4xx/5xx responses
+
+        result = response.json()
+        print(f"✅ Email sent successfully via Gmail API. Message ID: {result.get('id')}")
+        return result
+
+    except EnvironmentError as e:
+        print(f"❌ Gmail Config Error: {e}")
+        raise
+    except ConnectionError as e:
+        print(f"❌ Gmail Token Error: {e}")
+        raise
+    except requests.HTTPError as e:
+        error_body = {}
+        try:
+            error_body = e.response.json()
+        except Exception:
+            pass
+        print(f"❌ Gmail Send Error [{e.response.status_code}]: {error_body}")
+        raise
+    except Exception as e:
+        print(f"❌ Unexpected Gmail Error: {e}")
+        raise
